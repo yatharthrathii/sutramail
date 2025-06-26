@@ -19,7 +19,7 @@ const MailDetail = () => {
     loadMail();
   }, [id]);
 
-  if (!mail) return <p className="p-4">Loading mail...</p>;
+  if (!mail) return <p className="p-4 text-center">Loading mail...</p>;
 
   return (
     <div className="p-4 sm:p-6 max-w-4xl mx-auto ">
