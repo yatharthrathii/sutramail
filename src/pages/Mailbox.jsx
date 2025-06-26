@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-import { fetchInboxMails, fetchSentMails } from "../firebase/database";
 import {
   Menu,
   Inbox as InboxIcon,
@@ -19,41 +17,14 @@ import Sent from "../components/Sent";
 import Snoozed from "../components/Snoozed";
 import Starred from "../components/Starred";
 import Trash from "../components/Trash";
-import { useSelector } from "react-redux";
+import { useState } from "react";
+import useMails from "../hooks/useMails";
 
 const Mailbox = () => {
-  const [inbox, setInbox] = useState([]);
-  const [sent, setSent] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("Inbox");
   const [showMoreOptions, setShowMoreOptions] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const userEmail = useSelector((state) => state.user.email);
-
-  useEffect(() => {
-    if (!userEmail) return;
-
-    let pollingInterval;
-
-    const fetchMails = async () => {
-      const inboxMails = await fetchInboxMails(userEmail);
-      const sentMails = await fetchSentMails(userEmail);
-
-      setInbox((prevInbox) => {
-        const oldIds = prevInbox.map((m) => m.id).sort().join(",");
-        const newIds = inboxMails.map((m) => m.id).sort().join(",");
-        return oldIds !== newIds ? inboxMails : prevInbox;
-      });
-
-      setSent(sentMails);
-      setIsLoading(false);
-    };
-
-    fetchMails();
-    pollingInterval = setInterval(fetchMails, 2000);
-
-    return () => clearInterval(pollingInterval);
-  }, [userEmail]);
+  const { inbox, sent, loading } = useMails();
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
@@ -64,7 +35,7 @@ const Mailbox = () => {
   };
 
   const renderMainContent = () => {
-    if (isLoading) return <div className="p-6 text-center text-gray-500">Loading mails...</div>;
+    if (loading) return <div className="p-6 text-center text-gray-500">Loading mails...</div>;
 
     switch (activeTab) {
       case "Inbox":
@@ -74,23 +45,17 @@ const Mailbox = () => {
       case "Snoozed":
         return <Snoozed />;
       case "Sent":
-        return <Sent />;
+        return <Sent sentMails={sent} />;
       case "Draft":
         return <Draft />;
       case "Trash":
         return <Trash />;
       case "Compose":
-        return <ComposeMail senderEmail={userEmail} />;
+        return <ComposeMail />;
       default:
         return null;
     }
   };
-
-  if (!userEmail) {
-    return <div className="p-6 text-gray-600 text-center">Redirecting to login...</div>;
-  }
-
-  const unreadCount = inbox.filter((mail) => !mail.read).length;
 
   return (
     <div className="min-h-screen bg-emerald-50">
@@ -131,7 +96,7 @@ const Mailbox = () => {
 
             <nav className="space-y-2 text-sm">
               {[
-                { label: "Inbox", icon: <InboxIcon className="w-4 h-4" />, count: unreadCount },
+                { label: "Inbox", icon: <InboxIcon className="w-4 h-4" />, count: inbox.filter(mail => !mail.read).length },
                 { label: "Starred", icon: <Star className="w-4 h-4" /> },
                 { label: "Snoozed", icon: <Clock className="w-4 h-4" /> },
                 { label: "Sent", icon: <Send className="w-4 h-4" /> },
@@ -140,15 +105,17 @@ const Mailbox = () => {
                 <button
                   key={item.label}
                   onClick={() => handleTabClick(item.label)}
-                  className={`flex items-center gap-3 w-full text-left px-3 py-2 rounded-md hover:bg-emerald-100 transition ${activeTab === item.label
+                  className={`flex items-center justify-between gap-3 w-full text-left px-3 py-2 rounded-md hover:bg-emerald-100 transition ${activeTab === item.label
                     ? "bg-emerald-100 text-emerald-700"
                     : "text-gray-700"
                     }`}
                 >
-                  {item.icon}
-                  {item.label}
+                  <span className="flex items-center gap-3">
+                    {item.icon}
+                    {item.label}
+                  </span>
                   {item.count > 0 && (
-                    <span className="ml-auto text-xs text-emerald-600 font-semibold">
+                    <span className="bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full">
                       {item.count}
                     </span>
                   )}
