@@ -33,15 +33,26 @@ const Mailbox = () => {
   useEffect(() => {
     if (!userEmail) return;
 
+    let pollingInterval;
+
     const fetchMails = async () => {
-      setIsLoading(true);
       const inboxMails = await fetchInboxMails(userEmail);
       const sentMails = await fetchSentMails(userEmail);
-      setInbox(inboxMails);
+
+      setInbox((prevInbox) => {
+        const oldIds = prevInbox.map((m) => m.id).sort().join(",");
+        const newIds = inboxMails.map((m) => m.id).sort().join(",");
+        return oldIds !== newIds ? inboxMails : prevInbox;
+      });
+
       setSent(sentMails);
       setIsLoading(false);
     };
+
     fetchMails();
+    pollingInterval = setInterval(fetchMails, 2000);
+
+    return () => clearInterval(pollingInterval);
   }, [userEmail]);
 
   const handleTabClick = (tab) => {
@@ -78,6 +89,8 @@ const Mailbox = () => {
   if (!userEmail) {
     return <div className="p-6 text-gray-600 text-center">Redirecting to login...</div>;
   }
+
+  const unreadCount = inbox.filter((mail) => !mail.read).length;
 
   return (
     <div className="min-h-screen bg-emerald-50">
@@ -118,7 +131,7 @@ const Mailbox = () => {
 
             <nav className="space-y-2 text-sm">
               {[
-                { label: "Inbox", icon: <InboxIcon className="w-4 h-4" /> },
+                { label: "Inbox", icon: <InboxIcon className="w-4 h-4" />, count: unreadCount },
                 { label: "Starred", icon: <Star className="w-4 h-4" /> },
                 { label: "Snoozed", icon: <Clock className="w-4 h-4" /> },
                 { label: "Sent", icon: <Send className="w-4 h-4" /> },
@@ -134,6 +147,11 @@ const Mailbox = () => {
                 >
                   {item.icon}
                   {item.label}
+                  {item.count > 0 && (
+                    <span className="ml-auto text-xs text-emerald-600 font-semibold">
+                      {item.count}
+                    </span>
+                  )}
                 </button>
               ))}
 
