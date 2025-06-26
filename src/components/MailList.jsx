@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Star, StarOff, Trash2 } from "lucide-react";
-import { deleteMail as deleteFromFirebase } from "../firebase/database"
+import { deleteMail as deleteFromFirebase } from "../firebase/database";
+import { useNavigate } from "react-router-dom";
 
 const MailList = ({ title, mails }) => {
     const [starredMails, setStarredMails] = useState([]);
     const [readMails, setReadMails] = useState([]);
     const [selectedMails, setSelectedMails] = useState([]);
     const [visibleMails, setVisibleMails] = useState(mails);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const storedStarred = JSON.parse(localStorage.getItem("starredMails")) || [];
@@ -43,7 +46,7 @@ const MailList = ({ title, mails }) => {
     };
 
     const deleteMail = async (id) => {
-        await deleteFromFirebase(id); // Set deleted: true in Firebase
+        await deleteFromFirebase(id); // Marks as deleted in Firebase
 
         const updatedList = visibleMails.filter(mail => mail.id !== id);
         setVisibleMails(updatedList);
@@ -76,7 +79,10 @@ const MailList = ({ title, mails }) => {
                         return (
                             <li
                                 key={mail.id}
-                                onClick={() => markAsRead(mail.id)}
+                                onClick={() => {
+                                    markAsRead(mail.id);
+                                    navigate(`/mail/${mail.id}`);
+                                }}
                                 className={`p-4 rounded-xl border border-gray-200 hover:border-emerald-400 hover:shadow transition cursor-pointer ${!isRead ? "bg-emerald-50" : "bg-white"}`}
                             >
                                 <div className="flex justify-between items-start gap-4">

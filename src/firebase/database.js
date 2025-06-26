@@ -8,6 +8,7 @@ export const sendMail = async (mail) => {
             ...mail,
             to: mail.to?.trim().toLowerCase(),
             from: mail.from?.trim().toLowerCase(),
+            read: false,
         }),
     });
 
@@ -46,6 +47,15 @@ export const deleteMail = async (id) => {
     return res.ok;
 };
 
+export const markMailAsRead = async (id) => {
+    const res = await fetch(`${FIREBASE_DB_URL}/mails/${id}.json`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ read: true }),
+    });
+    return res.ok;
+};
+
 export const restoreMail = async (id) => {
     const res = await fetch(`${FIREBASE_DB_URL}/mails/${id}.json`, {
         method: "PATCH",
@@ -71,4 +81,10 @@ export const permanentlyDeleteMails = async (ids) => {
         fetch(`${FIREBASE_DB_URL}/mails/${id}.json`, { method: "DELETE" })
     );
     await Promise.all(deletePromises);
+};
+
+export const fetchMailById = async (id) => {
+    const res = await fetch(`${FIREBASE_DB_URL}/mails/${id}.json`);
+    const data = await res.json();
+    return { id, ...data };
 };
