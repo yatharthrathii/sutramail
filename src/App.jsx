@@ -2,15 +2,23 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Mailbox from "./pages/Mailbox";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/mailbox" element={<Mailbox />} />
-        <Route path="*" element={<Login />} />
+        {/* Public Routes: only for not-logged-in users */}
+        <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
+
+        {/* Protected Routes: only for logged-in users */}
+        <Route path="/mailbox" element={<ProtectedRoute><Mailbox /></ProtectedRoute>} />
+
+        {/* Unknown routes redirect to Mailbox (if logged in) */}
+        <Route path="*" element={<ProtectedRoute><Mailbox /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
