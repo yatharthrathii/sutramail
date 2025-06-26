@@ -40,6 +40,8 @@ const ComposeMail = () => {
             const res = await sendMail(mail);
             if (!res.ok) throw new Error("Failed to send mail");
 
+            // const mailWithId = { ...mail, id: res.id };
+
             setSuccess("Mail sent successfully!");
             setTo("");
             setSubject("");
