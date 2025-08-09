@@ -5,6 +5,8 @@ import Mailbox from "./pages/Mailbox";
 import MailDetail from "./pages/MailDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import ManageAccount from "./pages/ManageAccount";
+import SettingsPage from "./pages/SettingsPage";
 
 function App() {
   return (
@@ -17,7 +19,9 @@ function App() {
 
         {/* Protected Routes: only for logged-in users */}
         <Route path="/mailbox" element={<ProtectedRoute><Mailbox /></ProtectedRoute>} />
+        <Route path="/mailbox/manage-account" element={<ProtectedRoute><ManageAccount /></ProtectedRoute>} />
         <Route path="/mail/:id" element={<ProtectedRoute><MailDetail /></ProtectedRoute>} />
+        <Route path="/mailbox/setting" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
         {/* Unknown routes redirect to Mailbox (if logged in) */}
         <Route path="*" element={<ProtectedRoute><Mailbox /></ProtectedRoute>} />

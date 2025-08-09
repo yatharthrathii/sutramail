@@ -9,6 +9,9 @@ import {
   Settings,
   User,
   Pencil,
+  Archive,
+  Trash2,
+  CalendarCheck,
 } from "lucide-react";
 import ComposeMail from "../components/ComposeMail";
 import Draft from "../components/Draft";
@@ -17,21 +20,64 @@ import Sent from "../components/Sent";
 import Snoozed from "../components/Snoozed";
 import Starred from "../components/Starred";
 import Trash from "../components/Trash";
-import { useState } from "react";
+import Scheduled from "../components/Scheduled";
+import Archives from "../components/Archives";
+import { useState, useEffect, useRef } from "react";
 import useMails from "../hooks/useMails";
+import { useDispatch } from "react-redux";
+import { logout } from "../redux/userSlice";
+import { useNavigate } from "react-router-dom";
+import SettingsPage from "./SettingsPage";
 
 const Mailbox = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("Inbox");
   const [showMoreOptions, setShowMoreOptions] = useState(false);
-  const { inbox, sent, loading } = useMails();
+  const { inbox, sent, trashed, starred, snoozed, draft, loading } = useMails();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
     setShowMoreOptions(false);
+    setSearchQuery("");
     if (window.innerWidth < 768) {
       setSidebarOpen(false);
     }
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    window.location.href = "/login";
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Filter mails only for current active tab
+  const filterMails = (mails) => {
+    if (!searchQuery) return mails;
+    const q = searchQuery.toLowerCase();
+    return mails.filter(
+      (mail) =>
+        mail.subject?.toLowerCase().includes(q) ||
+        mail.body?.toLowerCase().includes(q) ||
+        mail.from?.toLowerCase().includes(q) ||
+        mail.to?.toLowerCase().includes(q)
+    );
   };
 
   const renderMainContent = () => {
@@ -39,19 +85,23 @@ const Mailbox = () => {
 
     switch (activeTab) {
       case "Inbox":
-        return <Inbox inboxMails={inbox} />;
+        return <Inbox inboxMails={filterMails(inbox)} />;
       case "Starred":
-        return <Starred />;
+        return <Starred starredMails={filterMails(starred)} />;
       case "Snoozed":
-        return <Snoozed />;
+        return <Snoozed snoozedMails={filterMails(snoozed)} />;
       case "Sent":
-        return <Sent sentMails={sent} />;
+        return <Sent sentMails={filterMails(sent)} />;
       case "Draft":
-        return <Draft />;
+        return <Draft draftMails={filterMails(draft)} />;
       case "Trash":
-        return <Trash />;
+        return <Trash trashMails={filterMails(trashed)} />;
       case "Compose":
         return <ComposeMail />;
+      case "Scheduled":
+        return <Scheduled />;
+      case "Archives":
+        return <Archives />;
       default:
         return null;
     }
@@ -71,13 +121,36 @@ const Mailbox = () => {
           <input
             type="text"
             placeholder="Search mail..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-300 focus:outline-none"
           />
         </div>
 
         <div className="flex items-center gap-4">
-          <Settings className="hidden md:block text-gray-600 hover:text-emerald-600 cursor-pointer" />
-          <User className="text-gray-600 hover:text-emerald-600 cursor-pointer" />
+          <Settings onClick={() => navigate("/mailbox/setting")} className="hidden md:block text-gray-600 hover:text-emerald-600 cursor-pointer" />
+          <div className="relative" ref={profileMenuRef}>
+            <User
+              className="text-gray-600 hover:text-emerald-600 cursor-pointer"
+              onClick={() => setProfileMenuOpen((prev) => !prev)}
+            />
+            {profileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
+                <button
+                  onClick={() => navigate("/mailbox/manage-account")}
+                  className="block w-full text-left px-4 py-2 cursor-pointer hover:bg-emerald-50 text-gray-700"
+                >
+                  Manage Account
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 cursor-pointer hover:bg-emerald-50 text-red-600"
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -89,14 +162,18 @@ const Mailbox = () => {
           <div className="p-4">
             <button
               onClick={() => handleTabClick("Compose")}
-              className="bg-emerald-500 text-white font-semibold py-2 mb-6 flex items-center justify-center gap-2 rounded-lg w-full hover:bg-emerald-600 transition"
+              className="bg-emerald-500 text-white font-semibold py-2 mb-6 flex items-center justify-center gap-2 rounded-lg w-full hover:bg-emerald-600 transition cursor-pointer"
             >
               <Pencil className="w-4 h-4" /> Compose
             </button>
 
             <nav className="space-y-2 text-sm">
               {[
-                { label: "Inbox", icon: <InboxIcon className="w-4 h-4" />, count: inbox.filter(mail => !mail.read).length },
+                {
+                  label: "Inbox",
+                  icon: <InboxIcon className="w-4 h-4" />,
+                  count: inbox.filter((mail) => !mail.read).length,
+                },
                 { label: "Starred", icon: <Star className="w-4 h-4" /> },
                 { label: "Snoozed", icon: <Clock className="w-4 h-4" /> },
                 { label: "Sent", icon: <Send className="w-4 h-4" /> },
@@ -105,9 +182,7 @@ const Mailbox = () => {
                 <button
                   key={item.label}
                   onClick={() => handleTabClick(item.label)}
-                  className={`flex items-center justify-between gap-3 w-full text-left px-3 py-2 rounded-md hover:bg-emerald-100 transition ${activeTab === item.label
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "text-gray-700"
+                  className={`flex items-center cursor-pointer justify-between gap-3 w-full text-left px-3 py-2 rounded-md hover:bg-emerald-100 transition ${activeTab === item.label ? "bg-emerald-100 text-emerald-700" : "text-gray-700"
                     }`}
                 >
                   <span className="flex items-center gap-3">
@@ -115,7 +190,7 @@ const Mailbox = () => {
                     {item.label}
                   </span>
                   {item.count > 0 && (
-                    <span className="bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                    <span className="bg-emerald-100  text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full">
                       {item.count}
                     </span>
                   )}
@@ -138,10 +213,25 @@ const Mailbox = () => {
                     }`}
                 >
                   <button
-                    onClick={() => handleTabClick("Trash")}
-                    className="flex items-center gap-3 w-full text-left px-3 py-2 rounded-md hover:bg-emerald-100 text-gray-700 transition"
+                    onClick={() => handleTabClick("Archives")}
+                    className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-md hover:bg-emerald-100 text-gray-700 transition cursor-pointer"
                   >
-                    🗑 Trash
+                    <Archive className="w-4 h-4" />
+                    Archive
+                  </button>
+                  <button
+                    onClick={() => handleTabClick("Scheduled")}
+                    className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-md hover:bg-emerald-100 text-gray-700 transition cursor-pointer"
+                  >
+                    <CalendarCheck className="w-4 h-4" />
+                    Scheduled
+                  </button>
+                  <button
+                    onClick={() => handleTabClick("Trash")}
+                    className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-md hover:bg-emerald-100 text-gray-700 transition cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Trash
                   </button>
                 </div>
               </div>

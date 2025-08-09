@@ -40,7 +40,7 @@ const Login = () => {
         setError("");
         try {
             const response = await LoginWithEmail(
-                "yatharthmaheshwari01@gmail.com",
+                "guest@sutramail.com",
                 "123456"
             );
             if (response.idToken) {

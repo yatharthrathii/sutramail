@@ -46,7 +46,7 @@ const MailList = ({ title, mails }) => {
     };
 
     const deleteMail = async (id) => {
-        await deleteFromFirebase(id); // Marks as deleted in Firebase
+        await deleteFromFirebase(id); 
 
         const updatedList = visibleMails.filter(mail => mail.id !== id);
         setVisibleMails(updatedList);
