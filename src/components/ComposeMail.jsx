@@ -56,7 +56,7 @@ const ComposeMail = () => {
 
     return (
         <div className="max-w-4xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold mb-6 text-center text-emerald-700">📤 Compose Mail</h2>
+            <h2 className="text-3xl font-bold mb-6 text-center text-emerald-700">Compose Mail</h2>
 
             {error && <p className="text-red-600 text-sm mb-4 text-center">{error}</p>}
             {success && <p className="text-green-600 text-sm mb-4 text-center">{success}</p>}
