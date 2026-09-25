@@ -1,88 +1,57 @@
-# SutraMail 📧
+# SutraMail
 
-SutraMail is a Gmail-like web application that allows users to send, receive, organize, and manage emails with ease. Built with **React**, **Firebase** (for backend & authentication), and **Redux** (for state management), SutraMail provides a smooth and responsive email experience.
+A Gmail-style mail client. Compose, send, star, trash, restore and search, with mail exchanged between accounts on the same app.
 
----
+Live: [sutramail.vercel.app](https://sutramail.vercel.app)
 
-# Live Link
-[SutraMail](https://sutramail.vercel.app)
+<img width="100%" alt="SutraMail inbox with the folder sidebar, mail list and compose button" src="https://github.com/user-attachments/assets/3f9ac28c-f199-4047-9e8c-f59160ca4f12" />
 
----
+## Why I built it
 
-## 🚀 Features
+Mail clients look simple and are not. Every message exists in two mailboxes at once, a delete on one side must not touch the other, trash has to be reversible, and the inbox has to keep up with new mail without the user refreshing. I built this to work through those state problems on a real interface rather than a todo list.
 
-- **Send Emails** — Compose and send emails instantly.
-- **View Sent Emails** — Check the list of all sent messages.
-- **Delete Emails** — Move unwanted emails to the Trash.
-- **Trash Management** — Restore or permanently delete trashed emails.
-- **Starred Emails** — Mark important emails for quick access.
-- **Manage Account** — Update username, profile picture, and password.
-- **Login & Logout** — Secure authentication with Firebase.
-- **Search Functionality** — Quickly find emails using keywords.
-- **Settings Page (Static for now)** — Will be made dynamic in future updates.
+## What it does
 
----
+**Mailboxes.** Inbox, sent, starred, trash. Each mail is written to the sender's sent box and the receiver's inbox as separate records, so one side can star or trash it without affecting the other.
 
-## 📅 Upcoming Features
+**Compose.** A rich text editor for the body, sent to any other account registered on the app.
 
-- **Snoozed Emails** — Temporarily hide emails until a specific time.
-- **Drafts** — Save and edit draft emails.
-- **Archive** — Store emails without deleting them.
-- **Scheduled Sending** — Send emails at a specific date and time.
-- **Dynamic Settings** — Customizable user preferences.
+**Trash that comes back.** Deleting moves a mail to trash. From there it can be restored or removed for good.
 
----
+**Search.** Filters the current mailbox by sender, subject and body.
 
-## 🛠 Tech Stack
+**Account.** Update display name, profile picture and password.
 
-- **Frontend:** React.js
-- **State Management:** Redux
-- **Backend & Auth:** Firebase
-- **Styling:** CSS / TailwindCSS
-- **Deployment:** (Vercel)
+**Live inbox.** The mailbox polls every two seconds, so new mail shows up without a refresh.
 
----
+## What is not there
 
-## 📸 Screenshots
+Drafts, snooze, archive and scheduled send have routes and pages but are not functional yet. The settings page is static. Mail only travels between SutraMail accounts, there is no SMTP or external delivery.
 
-### Login/SignUp Page
-<img width="1919" height="866" alt="login" src="https://github.com/user-attachments/assets/71e0e60b-0027-4c63-8368-2d81e49f5a0f" />
+## Stack
 
-<img width="1919" height="863" alt="signup" src="https://github.com/user-attachments/assets/9be1d82a-4825-44ff-b25b-816dee153e18" />
+React 19, Vite, Redux Toolkit, React Router, Tailwind CSS 4, Draft.js for the editor, date-fns. Firebase Authentication and Realtime Database, both through their REST APIs. Deployed on Vercel.
 
-### Indox Page
-<img width="1919" height="867" alt="indox" src="https://github.com/user-attachments/assets/3f9ac28c-f199-4047-9e8c-f59160ca4f12" />
+## Running it
 
-### Sent/Starred/trash/mail Pages
-<img width="1919" height="869" alt="starred" src="https://github.com/user-attachments/assets/a896c536-4a5a-493d-b2c8-f28b518a65f7" />
+```bash
+npm install
+cp .env.example .env    # Firebase web API key and Realtime Database URL
+npm run dev
+```
 
-<img width="1919" height="866" alt="trash" src="https://github.com/user-attachments/assets/fcdd6e86-c68d-43d2-9920-0996ab5653be" />
+## Screenshots
 
-<img width="1919" height="864" alt="sent" src="https://github.com/user-attachments/assets/83615298-337a-4d4f-b3e9-5876b32b62c9" />
+**Login and sign up**
+<img width="100%" alt="Login page" src="https://github.com/user-attachments/assets/71e0e60b-0027-4c63-8368-2d81e49f5a0f" />
 
-<img width="1919" height="866" alt="mail" src="https://github.com/user-attachments/assets/399e673e-505e-42e0-92fc-2392524da536" />
+**Compose**
+<img width="100%" alt="Compose dialog with recipient, subject and rich text body" src="https://github.com/user-attachments/assets/4ccb4bb3-8b87-4971-bc35-be4b1e38bc5b" />
 
-### Compose Page
-<img width="1919" height="867" alt="compose" src="https://github.com/user-attachments/assets/4ccb4bb3-8b87-4971-bc35-be4b1e38bc5b" />
+**Reading a mail**
+<img width="100%" alt="Open mail view" src="https://github.com/user-attachments/assets/399e673e-505e-42e0-92fc-2392524da536" />
 
-
-
-
----
-
-## 📌 Usage
-
- - Compose a new email and send it.
- - View sent emails in the Sent section.
- - Delete emails to move them to Trash.
- - Restore or permanently delete emails from Trash.
- - Star important emails for quick access.
- - Search for emails by keywords.
- - Manage your account details in the Manage Account section.
-
----
-
-## 🙋‍♂️ Author
-- Yatharth Rathi
-- Connect with me:
-- 💼 [LinkedIn](https://www.linkedin.com/in/yatharthrathii) | 📩 yatharthmaheshwari01@gmail.com
+**Starred, sent and trash**
+<img width="100%" alt="Starred mailbox" src="https://github.com/user-attachments/assets/a896c536-4a5a-493d-b2c8-f28b518a65f7" />
+<img width="100%" alt="Sent mailbox" src="https://github.com/user-attachments/assets/83615298-337a-4d4f-b3e9-5876b32b62c9" />
+<img width="100%" alt="Trash with restore and delete forever" src="https://github.com/user-attachments/assets/fcdd6e86-c68d-43d2-9920-0996ab5653be" />
